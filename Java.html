@@ -25,198 +25,196 @@ A:hover
     <li>Код для игры в пятнашки</li>
     <details>
       <summary>Код для игры в пятнашки</summary>
-    package javenue.util;
+    package javenue.util;<br>
+import javax.swing.*;<br>
+import java.awt.*;<br>
+import java.awt.event.ActionEvent;<br>
+import java.awt.event.ActionListener;<br>
+import java.util.Random;<br>
+<br>
+public class Pyatnashki extends JFrame {<br>
+    private JPanel panel = new JPanel(new GridLayout(4, 4, 2, 2));<br>
+    private int[][] numbers = new int[4][4];<br>
+<br>
+    public Pyatnashki() {<br>
+        super("Pyatnashki by c0nst");<br>
+        setBounds(200, 200, 300, 300);<br>
+        setResizable(false);<br>
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);<br>
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Random;
+        createMenu();<br>
 
-public class Pyatnashki extends JFrame {
-    private JPanel panel = new JPanel(new GridLayout(4, 4, 2, 2));
-    private int[][] numbers = new int[4][4];
+        Container container = getContentPane();<br>
+        panel.setDoubleBuffered(true);<br>
+        container.add(panel);<br>
 
-    public Pyatnashki() {
-        super("Pyatnashki by c0nst");
+        generate();<br>
+        repaintField();<br>
+    }<br>
 
-        setBounds(200, 200, 300, 300);
-        setResizable(false);
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    public void generate() {<br>
+        Random generator = new Random();<br>
+        int[] invariants = new int[16];<br>
 
-        createMenu();
+        do {<br>
+            for (int i = 0; i < 4; i++) {<br>
+                for (int j = 0; j < 4; j++) {<br>
+                    numbers[i][j] = 0;<br>
+                    invariants[i * 4 + j] = 0;<br>
+                }<br>
+            }<br>
 
-        Container container = getContentPane();
-        panel.setDoubleBuffered(true);
-        container.add(panel);
+            for (int i = 1; i < 16; i++) {<br>
+                int k, l;<br>
+                do {<br>
+                    k = generator.nextInt(4);<br>
+                    l = generator.nextInt(4);<br>
+                }<br>
+                while (numbers[k][l] != 0);<br>
+                numbers[k][l] = i;<br>
+                invariants[k * 4 + l] = i;<br>
+            }<br>
+        }<br>
+        while (!canBeSolved(invariants));<br>
+    }<br>
 
-        generate();
-        repaintField();
-    }
+    private boolean canBeSolved(int[] invariants) {<br>
+        int sum = 0;<br>
+        for (int i = 0; i < 16; i++) {<br>
+            if (invariants[i] == 0) {<br>
+                sum += i / 4;<br>
+                continue;<br>
+            }<br>
 
-    public void generate() {
-        Random generator = new Random();
-        int[] invariants = new int[16];
+            for (int j = i + 1; j < 16; j++) {<br>
+                if (invariants[j] < invariants[i])<br>
+                    sum ++;<br>
+            }<br>
+        }<br>
+        System.out.println(sum % 2 == 0);<br>
+        return sum % 2 == 0;<br>
+    }<br>
 
-        do {
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 4; j++) {
-                    numbers[i][j] = 0;
-                    invariants[i * 4 + j] = 0;
-                }
-            }
+    public void repaintField() {<br>
+        panel.removeAll();<br>
 
-            for (int i = 1; i < 16; i++) {
-                int k, l;
-                do {
-                    k = generator.nextInt(4);
-                    l = generator.nextInt(4);
-                }
-                while (numbers[k][l] != 0);
-                numbers[k][l] = i;
-                invariants[k * 4 + l] = i;
-            }
-        }
-        while (!canBeSolved(invariants));
-    }
+        for (int i = 0; i < 4; i++) {<br>
+            for (int j = 0; j < 4; j++) {<br>
+                JButton button = new JButton(Integer.toString(numbers[i][j]));<br>
+                button.setFocusable(false);<br>
+                panel.add(button);<br>
+                if (numbers[i][j] == 0) {<br>
+                    button.setVisible(false);<br>
+                } else<br>
+                    button.addActionListener(new ClickListener());<br>
+            }<br>
+        }<br>
 
-    private boolean canBeSolved(int[] invariants) {
-        int sum = 0;
-        for (int i = 0; i < 16; i++) {
-            if (invariants[i] == 0) {
-                sum += i / 4;
-                continue;
-            }
+        panel.validate();<br>
+        panel.repaint();<br>
+    }<br>
 
-            for (int j = i + 1; j < 16; j++) {
-                if (invariants[j] < invariants[i])
-                    sum ++;
-            }
-        }
-        System.out.println(sum % 2 == 0);
-        return sum % 2 == 0;
-    }
+    public boolean checkWin() {<br>
+        boolean status = true;<br>
+        for (int i = 0; i < 4; i++) {<br>
+            for (int j = 0; j < 4; j++) {<br>
+                if (i == 3 && j > 2)<br>
+                    break;<br>
+                if (numbers[i][j] != i * 4 + j + 1) {<br>
+                    status = false;<br>
+                }<br>
+            }<br>
+        }<br>
+        return status;<br>
+    }<br>
 
-    public void repaintField() {
-        panel.removeAll();
+    private void createMenu() {<br>
+        JMenuBar menu = new JMenuBar();<br>
+        JMenu fileMenu = new JMenu("File");<br>
 
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                JButton button = new JButton(Integer.toString(numbers[i][j]));
-                button.setFocusable(false);
-                panel.add(button);
-                if (numbers[i][j] == 0) {
-                    button.setVisible(false);
-                } else
-                    button.addActionListener(new ClickListener());
-            }
-        }
+        for (String fileItem : new String [] { "New", "Exit" }) {<br>
+            JMenuItem item = new JMenuItem(fileItem);<br>
+            item.setActionCommand(fileItem.toLowerCase());<br>
+            item.addActionListener(new NewMenuListener());<br>
+            fileMenu.add(item);<br>
+        }<br>
+        fileMenu.insertSeparator(1);<br>
 
-        panel.validate();
-        panel.repaint();
-    }
+        menu.add(fileMenu);<br>
+        setJMenuBar(menu);<br>
+    }<br>
 
-    public boolean checkWin() {
-        boolean status = true;
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                if (i == 3 && j > 2)
-                    break;
-                if (numbers[i][j] != i * 4 + j + 1) {
-                    status = false;
-                }
-            }
-        }
-        return status;
-    }
+    private class NewMenuListener implements ActionListener {<br>
+        public void actionPerformed(ActionEvent e) {<br>
+            String command = e.getActionCommand();<br>
+            if ("exit".equals(command)) {<br>
+                System.exit(0);<br>
+            }<br>
+            if ("new".equals(command)) {<br>
+                generate();<br>
+                repaintField();<br>
+            }<br>
+        }<br>
+    }<br>
 
-    private void createMenu() {
-        JMenuBar menu = new JMenuBar();
-        JMenu fileMenu = new JMenu("File");
+    private class ClickListener implements ActionListener {<br>
+        public void actionPerformed(ActionEvent e) {<br>
+            JButton button = (JButton) e.getSource();<br>
+            button.setVisible(false);<br>
+            String name = button.getText();<br>
+            change(Integer.parseInt(name));<br>
+        }<br>
+    }<br>
 
-        for (String fileItem : new String [] { "New", "Exit" }) {
-            JMenuItem item = new JMenuItem(fileItem);
-            item.setActionCommand(fileItem.toLowerCase());
-            item.addActionListener(new NewMenuListener());
-            fileMenu.add(item);
-        }
-        fileMenu.insertSeparator(1);
+    public void change(int num) {<br>
+        int i = 0, j = 0;<br>
+        for (int k = 0; k < 4; k++) {<br>
+            for (int l = 0; l < 4; l++) {<br>
+                if (numbers[k][l] == num) {<br>
+                    i = k;<br>
+                    j = l;<br>
+                }<br>
+            }<br>
+        }<br>
+        if (i > 0) {<br>
+            if (numbers[i - 1][j] == 0) {<br>
+                numbers[i - 1][j] = num;<br>
+                numbers[i][j] = 0;<br>
+            }<br>
+        }<br>
+        if (i < 3) {<br>
+            if (numbers[i + 1][j] == 0) {<br>
+                numbers[i + 1][j] = num;<br>
+                numbers[i][j] = 0;<br>
+            }<br>
+        }<br>
+        if (j > 0) {<br>
+            if (numbers[i][j - 1] == 0) {<br>
+                numbers[i][j - 1] = num;<br>
+                numbers[i][j] = 0;<br>
+            }<br>
+        }<br>
+        if (j < 3) {<br>
+            if (numbers[i][j + 1] == 0) {<br>
+                numbers[i][j + 1] = num;<br>
+                numbers[i][j] = 0;<br>
+            }<br>
+        }<br>
 
-        menu.add(fileMenu);
-        setJMenuBar(menu);
-    }
+        repaintField();<br>
 
-    private class NewMenuListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            String command = e.getActionCommand();
-            if ("exit".equals(command)) {
-                System.exit(0);
-            }
-            if ("new".equals(command)) {
-                generate();
-                repaintField();
-            }
-        }
-    }
+        if (checkWin()) {<br>
+            JOptionPane.showMessageDialog(null, "YOU WIN!", "Congratulations", JOptionPane.INFORMATION_MESSAGE);<br>
+            generate();<br>
+            repaintField();<br>
+        }<br>
+    }<br>
 
-    private class ClickListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            JButton button = (JButton) e.getSource();
-            button.setVisible(false);
-            String name = button.getText();
-            change(Integer.parseInt(name));
-        }
-    }
-
-    public void change(int num) {
-        int i = 0, j = 0;
-        for (int k = 0; k < 4; k++) {
-            for (int l = 0; l < 4; l++) {
-                if (numbers[k][l] == num) {
-                    i = k;
-                    j = l;
-                }
-            }
-        }
-        if (i > 0) {
-            if (numbers[i - 1][j] == 0) {
-                numbers[i - 1][j] = num;
-                numbers[i][j] = 0;
-            }
-        }
-        if (i < 3) {
-            if (numbers[i + 1][j] == 0) {
-                numbers[i + 1][j] = num;
-                numbers[i][j] = 0;
-            }
-        }
-        if (j > 0) {
-            if (numbers[i][j - 1] == 0) {
-                numbers[i][j - 1] = num;
-                numbers[i][j] = 0;
-            }
-        }
-        if (j < 3) {
-            if (numbers[i][j + 1] == 0) {
-                numbers[i][j + 1] = num;
-                numbers[i][j] = 0;
-            }
-        }
-
-        repaintField();
-
-        if (checkWin()) {
-            JOptionPane.showMessageDialog(null, "YOU WIN!", "Congratulations", JOptionPane.INFORMATION_MESSAGE);
-            generate();
-            repaintField();
-        }
-    }
-
-    public static void main(String[] args) {
-        JFrame app = new Pyatnashki();
-        app.setVisible(true);
-    }
-}
+    public static void main(String[] args) {<br>
+        JFrame app = new Pyatnashki();<br>
+        app.setVisible(true);<br>
+    }<br>
+}<br>
  <br>
 </details>
   </ol>
